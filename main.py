@@ -37,10 +37,15 @@ def get_data_urls(year):
     return urls
 
 
-current_year = date.today().year
-data_urls = get_data_urls(current_year)
+def main():
+    current_year = date.today().year
+    data_urls = get_data_urls(current_year)
 
-number_ones = [song for url in data_urls for song in get_songs(url)]
+    number_ones = [song for url in data_urls for song in get_songs(url)]
 
-print(number_ones)
-print(len(number_ones))
+    print(number_ones)
+    print(len(number_ones))
+
+
+if __name__ == "__main__":
+    main()
