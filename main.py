@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from collections import namedtuple
 from datetime import date
 
-Song = namedtuple("Song", ["artist", "title"])
+Song = namedtuple("Song", ["number", "artist", "title", "year"])
 
 
 def get_songs(url):
@@ -21,8 +21,13 @@ def get_songs(url):
     for row in rows[1:]:
         cells = row.find_all("td")
         try:
-            song_list.append(Song(artist=cells[2].text.strip(), title=cells[3].text.split('"')[1]))
-        except IndexError:
+            song_list.append(Song(
+                number=int(cells[0].text),
+                artist=cells[2].text.strip(),
+                title=cells[3].text.split('"')[1],
+                year=int(cells[1].text.split(",")[-1])
+            ))
+        except (IndexError, ValueError):
             pass
 
     return song_list
