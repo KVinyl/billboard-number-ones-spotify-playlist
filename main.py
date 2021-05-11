@@ -2,6 +2,7 @@ import requests
 
 from bs4 import BeautifulSoup
 from collections import namedtuple
+from datetime import date
 
 Song = namedtuple("Song", ["artist", "title"])
 
@@ -27,17 +28,19 @@ def get_songs(url):
     return song_list
 
 
-wiki_urls = [
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_from_1958_to_1969",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_1970s",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_1980s",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_1990s",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_2000s",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_2010s",
-    "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_2020s"
-]
+def get_data_urls(year):
+    urls = ["https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_from_1958_to_1969"]
+    current_decade = int(f"{year//10}0")
+    for decade in range(1970, current_decade+1, 10):
+        urls.append(f"https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_number-one_singles_of_the_{decade}s")
 
-number_ones = [song for url in wiki_urls for song in get_songs(url)]
+    return urls
+
+
+current_year = date.today().year
+data_urls = get_data_urls(current_year)
+
+number_ones = [song for url in data_urls for song in get_songs(url)]
 
 print(number_ones)
 print(len(number_ones))
