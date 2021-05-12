@@ -50,11 +50,23 @@ def get_data_urls(year):
 
 
 def get_uri(song, sp):
-    result = sp.search(f'track:"{song.title}" artist:"{song.artist}"', limit=1)
-    try:
-        return result['tracks']['items'][0]['uri']
-    except IndexError:
-        return None
+
+    search_queries = [
+        f'track:"{song.title}" artist:"{song.artist}"',
+        f'track:"{song.title}"',
+        f'"{song.title}"',
+        f'{song.title}'
+    ]
+
+    for q in search_queries:
+        result = sp.search(q, limit=1)
+        try:
+            return result['tracks']['items'][0]['uri']
+        except IndexError:
+            pass
+
+    print(song)
+    return None
 
 
 def main():
