@@ -51,11 +51,14 @@ def get_data_urls(year):
 
 
 def get_uri(song, sp):
+    def remove_irrelevant_words(string):
+        irrel_words = {"and", "featuring", "with", "&", "solo", "duet", "or", "x"}
+        return " ".join(word for word in string.split(" ") if word not in irrel_words)
 
     search_queries = [
         f'track:"{song.title}" artist:"{song.artist}"',
+        f'{song.title} {remove_irrelevant_words(song.artist)}',
         f'track:"{song.title}"',
-        f'"{song.title}"',
         f'{song.title}'
     ]
 
