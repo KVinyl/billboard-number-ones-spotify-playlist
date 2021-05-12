@@ -1,10 +1,17 @@
+import os
 import requests
+import spotipy
 
 from bs4 import BeautifulSoup
 from collections import namedtuple
 from datetime import date
+from spotipy.oauth2 import SpotifyOAuth
 
 Song = namedtuple("Song", ["number", "artist", "title", "year"])
+
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
+REDIRECT_URI = os.environ['REDIRECT_URI']
 
 
 def get_songs(url):
@@ -42,14 +49,30 @@ def get_data_urls(year):
     return urls
 
 
+def get_uri(song, sp):
+    result = sp.search(f'track:"{song.title}" artist:"{song.artist}"', limit=1)
+    try:
+        return result['tracks']['items'][0]['uri']
+    except IndexError:
+        return None
+
+
 def main():
     current_year = date.today().year
     data_urls = get_data_urls(current_year)
 
     number_ones = [song for url in data_urls for song in get_songs(url)]
 
-    print(number_ones)
-    print(len(number_ones))
+    # for i, song in enumerate(number_ones, 1):
+    #     print(i, song)
+
+    auth_manager = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI,
+                                scope="playlist-modify-private", cache_path="token.txt")
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    user_id = sp.current_user()['id']
+
+    song_uris = [get_uri(song, sp) for song in number_ones]
+    print(f"Songs found in Spotify search: {sum(x is not None for x in song_uris)}/{len(song_uris)}")
 
 
 if __name__ == "__main__":
