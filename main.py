@@ -5,6 +5,7 @@ import spotipy
 from bs4 import BeautifulSoup
 from collections import namedtuple
 from datetime import date
+from itertools import zip_longest
 from spotipy.oauth2 import SpotifyOAuth
 
 Song = namedtuple("Song", ["number", "artist", "title", "year"])
@@ -64,9 +65,12 @@ def get_uri(song, sp):
             return result['tracks']['items'][0]['uri']
         except IndexError:
             pass
-
-    print(song)
     return None
+
+
+def grouper(iterable, n, fillvalue=None):
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
 
 
 def main():
@@ -75,16 +79,19 @@ def main():
 
     number_ones = [song for url in data_urls for song in get_songs(url)]
 
-    # for i, song in enumerate(number_ones, 1):
-    #     print(i, song)
-
     auth_manager = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI,
                                 scope="playlist-modify-private", cache_path="token.txt")
     sp = spotipy.Spotify(auth_manager=auth_manager)
     user_id = sp.current_user()['id']
 
     song_uris = [get_uri(song, sp) for song in number_ones]
-    print(f"Songs found in Spotify search: {sum(x is not None for x in song_uris)}/{len(song_uris)}")
+
+    playlist = sp.user_playlist_create(user_id, "Billboard Number-Ones", public=False)
+
+    uri_groups_100 = list(grouper(song_uris, 100))
+    uri_groups_100[-1] = [uri for uri in uri_groups_100[-1] if uri is not None]
+    for uri_group in uri_groups_100:
+        sp.playlist_add_items(playlist['id'], uri_group)
 
 
 if __name__ == "__main__":
